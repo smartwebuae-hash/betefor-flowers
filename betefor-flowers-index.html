@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Betefor Flowers</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Amiri:wght@400;700&family=Tajawal:wght@300;400;500;700;900&display=swap" media="print" onload="this.media='all'">
+<style>
+  :root{
+    --cream:#F3E3C3;
+    --bg:#020617;
+    --dim:rgba(255,255,255,0.78);
+    --font-main:'Tajawal', sans-serif;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{height:100%;}
+  body{
+    font-family:var(--font-main);
+    color:#fff;
+    background:var(--bg);
+    min-height:100vh;
+    overflow-x:hidden;
+  }
+  #stars{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden;}
+  .star{
+    position:absolute;bottom:-10px;background:#fff;border-radius:50%;opacity:0;
+    animation-name:rise;animation-timing-function:linear;animation-iteration-count:infinite;
+    box-shadow:0 0 4px rgba(255,255,255,0.8);
+  }
+  @keyframes rise{
+    0%{transform:translateY(0);opacity:0;}
+    8%{opacity:1;} 92%{opacity:1;}
+    100%{transform:translateY(-110vh);opacity:0;}
+  }
+  main{position:relative;z-index:2;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:60px 24px;}
+  .lang-switch{
+    position:fixed;top:18px;left:18px;z-index:5;display:flex;
+    background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.35);
+    backdrop-filter:blur(6px);border-radius:999px;padding:4px;gap:4px;
+  }
+  .lang-btn{border:none;background:transparent;color:var(--dim);font-weight:700;font-size:0.75rem;padding:6px 14px;border-radius:999px;cursor:pointer;}
+  .lang-btn.active{background:var(--cream);color:#1a1a1a;}
+
+  .brand-circle{
+    width:170px;height:170px;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    background:rgba(255,255,255,0.10);border:1px solid rgba(255,255,255,0.4);
+    backdrop-filter:blur(6px);box-shadow:inset 0 1px 0 rgba(255,255,255,0.45);
+    margin-bottom:18px;position:relative;overflow:hidden;
+  }
+  .brand-circle::before{
+    content:'';position:absolute;top:-35%;left:-25%;width:150%;height:75%;
+    background:linear-gradient(120deg, rgba(255,255,255,0.6), rgba(255,255,255,0) 65%);
+    transform:rotate(-18deg);
+  }
+  .brand-emoji{font-size:64px;position:relative;z-index:1;}
+  .brand-title{
+    font-family:'Cormorant Garamond', serif;font-weight:700;font-size:2.3rem;
+    color:var(--cream);letter-spacing:1px;
+  }
+  .brand-sub{
+    font-family:'Amiri', serif;font-size:1.1rem;color:var(--dim);margin:6px 0 30px;text-align:center;
+  }
+
+  .cat-tabs{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-bottom:26px;max-width:460px;}
+  .cat-tab{
+    padding:8px 16px;border-radius:999px;background:rgba(255,255,255,0.08);
+    border:1px solid rgba(255,255,255,0.2);color:var(--dim);font-size:0.8rem;font-weight:700;cursor:pointer;
+  }
+  .cat-tab.active{background:var(--cream);color:#1a1a1a;border-color:var(--cream);}
+
+  .grid{
+    display:grid;grid-template-columns:repeat(2,1fr);gap:16px;
+    width:100%;max-width:480px;
+  }
+  .card{
+    background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.15);
+    border-radius:18px;overflow:hidden;display:flex;flex-direction:column;
+    backdrop-filter:blur(4px);
+  }
+  .card-photo{width:100%;aspect-ratio:1/1;background:rgba(255,255,255,0.08);position:relative;}
+  .card-photo img{width:100%;height:100%;object-fit:cover;display:none;}
+  .card-photo .ph{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:2.2rem;opacity:0.7;}
+  .card-info{padding:12px;}
+  .card-name{font-weight:700;font-size:0.9rem;color:#fff;margin-bottom:4px;}
+  .card-price{color:var(--cream);font-weight:700;font-size:0.85rem;direction:ltr;text-align:right;margin-bottom:8px;}
+  .card-order{
+    display:flex;align-items:center;justify-content:center;gap:6px;
+    background:#25D366;color:#fff;font-size:0.72rem;font-weight:700;
+    padding:9px;border-radius:999px;text-decoration:none;
+  }
+  footer{position:relative;z-index:2;text-align:center;padding:30px 24px;font-size:0.8rem;color:var(--dim);}
+</style>
+</head>
+<body>
+
+<div id="stars"></div>
+
+<div class="lang-switch">
+  <button class="lang-btn active" id="btn-ar" onclick="setLang('ar')">عربي</button>
+  <button class="lang-btn" id="btn-en" onclick="setLang('en')">EN</button>
+</div>
+
+<main>
+  <div class="brand-circle"><span class="brand-emoji">💐</span></div>
+  <div class="brand-title" id="hero-title">Betefor</div>
+  <div class="brand-sub" id="hero-tagline">زهور تليق باللحظة</div>
+
+  <div class="cat-tabs" id="cat-tabs"></div>
+  <div class="grid" id="product-grid"></div>
+</main>
+
+<footer>© 2026 Betefor Flowers</footer>
+
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<script>
+  // ===== Fill these in after creating your Supabase project =====
+  const SUPABASE_URL = 'https://iekotptltmkjmieauhqc.supabase.co';
+  const SUPABASE_ANON_KEY = 'sb_publishable_35u5V1apSr2-DCpjp8ltmg_gIJzhXEN';
+  const WHATSAPP_NUMBER = '971508399220';
+  // ================================================================
+
+  let supabase = null;
+  try {
+    if (SUPABASE_URL !== 'YOUR_SUPABASE_URL') {
+      supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    }
+  } catch (e) { console.warn('Supabase not configured yet'); }
+
+  // Sample fallback flowers shown until the real database is connected / has data
+  const SAMPLE_PRODUCTS = [
+    { name: 'باقة الورد الأحمر', price: 120, category: 'ورد', emoji: '🌹' },
+    { name: 'باقة الزنبق الأبيض', price: 95, category: 'زنبق', emoji: '🌷' },
+    { name: 'باقة مشكلة فاخرة', price: 180, category: 'مشكلة', emoji: '💐' },
+    { name: 'باقة عباد الشمس', price: 85, category: 'عباد الشمس', emoji: '🌻' },
+    { name: 'باقة الأوركيد', price: 150, category: 'أوركيد', emoji: '🪷' },
+    { name: 'سلة ورد للمناسبات', price: 220, category: 'مناسبات', emoji: '🧺' },
+  ];
+
+  let currentProducts = [...SAMPLE_PRODUCTS];
+  let currentCategory = 'الكل';
+
+  function currentLang(){ return document.documentElement.getAttribute('lang') || 'ar'; }
+
+  function setLang(lang){
+    document.documentElement.setAttribute('lang', lang);
+    document.documentElement.setAttribute('dir', lang === 'ar' ? 'rtl' : 'ltr');
+    document.getElementById('btn-ar').classList.toggle('active', lang === 'ar');
+    document.getElementById('btn-en').classList.toggle('active', lang === 'en');
+    renderCategories();
+    renderProducts();
+  }
+
+  function renderCategories(){
+    const cats = ['الكل', ...new Set(currentProducts.map(p => p.category))];
+    const el = document.getElementById('cat-tabs');
+    el.innerHTML = '';
+    cats.forEach(cat => {
+      const btn = document.createElement('button');
+      btn.className = 'cat-tab' + (cat === currentCategory ? ' active' : '');
+      btn.textContent = cat;
+      btn.onclick = () => { currentCategory = cat; renderCategories(); renderProducts(); };
+      el.appendChild(btn);
+    });
+  }
+
+  function renderProducts(){
+    const lang = currentLang();
+    const orderLabel = lang === 'ar' ? 'اطلب الآن' : 'Order Now';
+    const list = currentCategory === 'الكل' ? currentProducts : currentProducts.filter(p => p.category === currentCategory);
+    const grid = document.getElementById('product-grid');
+    grid.innerHTML = '';
+    list.forEach(p => {
+      const waMsg = encodeURIComponent('مرحباً، أرغب بطلب: ' + p.name + ' - ' + p.price + ' درهم');
+      const waLink = 'https://wa.me/' + WHATSAPP_NUMBER + '?text=' + waMsg;
+      const card = document.createElement('div');
+      card.className = 'card';
+      card.innerHTML =
+        '<div class="card-photo">' +
+          (p.image_url ?
+            '<img src="' + p.image_url + '" alt="' + p.name + '" onload="this.style.display=\'block\';this.nextElementSibling.style.display=\'none\';" onerror="this.style.display=\'none\';">' :
+            '') +
+          '<span class="ph">' + (p.emoji || '🌸') + '</span>' +
+        '</div>' +
+        '<div class="card-info">' +
+          '<div class="card-name">' + p.name + '</div>' +
+          '<div class="card-price">' + p.price + ' AED</div>' +
+          '<a class="card-order" href="' + waLink + '" target="_blank">' + orderLabel + '</a>' +
+        '</div>';
+      grid.appendChild(card);
+    });
+  }
+
+  function applySettings(s){
+    if (!s) return;
+    document.documentElement.style.setProperty('--cream', s.font_color || '#F3E3C3');
+    document.documentElement.style.setProperty('--bg', s.background_color || '#020617');
+    if (s.font_family) document.documentElement.style.setProperty('--font-main', s.font_family + ', sans-serif');
+    if (s.hero_title) document.getElementById('hero-title').textContent = s.hero_title;
+    if (s.hero_tagline) document.getElementById('hero-tagline').textContent = s.hero_tagline;
+  }
+
+  async function loadFromSupabase(){
+    if (!supabase) return;
+    try {
+      const { data: settings } = await supabase.from('flowers_settings').select('*').eq('id', 1).single();
+      applySettings(settings);
+    } catch (e) { console.warn('settings load failed', e); }
+
+    try {
+      const { data: products } = await supabase.from('flowers_products').select('*').order('sort_order', { ascending: true });
+      if (products && products.length > 0) {
+        currentProducts = products;
+      }
+    } catch (e) { console.warn('products load failed', e); }
+
+    renderCategories();
+    renderProducts();
+  }
+
+  // Stars
+  const starsContainer = document.getElementById('stars');
+  for (let i = 0; i < 60; i++) {
+    const s = document.createElement('div');
+    s.className = 'star';
+    const size = (Math.random()*2 + 0.6).toFixed(2);
+    s.style.width = size + 'px'; s.style.height = size + 'px';
+    s.style.left = (Math.random()*100) + 'vw';
+    s.style.animationDuration = (Math.random()*10 + 8).toFixed(2) + 's';
+    s.style.animationDelay = '-' + (Math.random()*18).toFixed(2) + 's';
+    starsContainer.appendChild(s);
+  }
+
+  renderCategories();
+  renderProducts();
+  loadFromSupabase();
+</script>
+
+</body>
+</html>

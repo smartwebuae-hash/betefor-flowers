@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>لوحة تحكم Betefor Flowers</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{
+    font-family:'Tajawal','Segoe UI',sans-serif;
+    background:#0b1020;color:#fff;min-height:100vh;
+    padding:24px;
+  }
+  .wrap{max-width:520px;margin:0 auto;}
+  h1{font-size:1.4rem;margin-bottom:20px;color:#F3E3C3;}
+  h2{font-size:1.05rem;margin:28px 0 12px;color:#F3E3C3;}
+  .card{
+    background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.15);
+    border-radius:14px;padding:18px;margin-bottom:14px;
+  }
+  label{display:block;font-size:0.8rem;color:#ccc;margin-bottom:4px;margin-top:10px;}
+  input, select{
+    width:100%;padding:10px 12px;border-radius:8px;border:1px solid rgba(255,255,255,0.25);
+    background:rgba(255,255,255,0.08);color:#fff;font-size:0.9rem;font-family:inherit;
+  }
+  input[type=color]{height:42px;padding:4px;}
+  button{
+    margin-top:14px;padding:11px 18px;border:none;border-radius:999px;
+    background:#F3E3C3;color:#1a1a1a;font-weight:700;font-size:0.85rem;cursor:pointer;
+  }
+  button.danger{background:#e5484d;color:#fff;}
+  button.secondary{background:rgba(255,255,255,0.12);color:#fff;border:1px solid rgba(255,255,255,0.3);}
+  .product-item{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.08);}
+  .product-item img{width:48px;height:48px;object-fit:cover;border-radius:8px;background:rgba(255,255,255,0.1);}
+  .product-item .info{flex:1;}
+  .product-item .name{font-weight:700;font-size:0.9rem;}
+  .product-item .price{color:#F3E3C3;font-size:0.8rem;}
+  .product-item .actions{display:flex;gap:6px;}
+  .product-item .actions button{margin-top:0;padding:6px 10px;font-size:0.75rem;}
+  #login-screen{max-width:340px;margin:80px auto;}
+  #dashboard{display:none;}
+  .msg{font-size:0.8rem;margin-top:8px;}
+  .msg.error{color:#ff8a8a;}
+  .msg.ok{color:#8aff9e;}
+  .topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;}
+</style>
+</head>
+<body>
+
+<div id="login-screen">
+  <h1>تسجيل دخول المالك</h1>
+  <div class="card">
+    <label>البريد الإلكتروني</label>
+    <input type="email" id="login-email" placeholder="owner@example.com">
+    <label>كلمة المرور</label>
+    <input type="password" id="login-password">
+    <button onclick="login()">دخول</button>
+    <div class="msg error" id="login-msg"></div>
+  </div>
+</div>
+
+<div id="dashboard">
+  <div class="wrap">
+    <div class="topbar">
+      <h1>لوحة تحكم Betefor Flowers</h1>
+      <button class="secondary" onclick="logout()">خروج</button>
+    </div>
+
+    <h2>مظهر الموقع</h2>
+    <div class="card">
+      <label>لون الخط</label>
+      <input type="color" id="font_color">
+      <label>لون الخلفية</label>
+      <input type="color" id="background_color">
+      <label>نوع الخط</label>
+      <select id="font_family">
+        <option value="Tajawal">Tajawal</option>
+        <option value="Cairo">Cairo</option>
+        <option value="Amiri">Amiri</option>
+        <option value="Cormorant Garamond">Cormorant Garamond</option>
+        <option value="Almarai">Almarai</option>
+      </select>
+      <label>عنوان الصفحة الرئيسي</label>
+      <input type="text" id="hero_title">
+      <label>الجملة التعريفية</label>
+      <input type="text" id="hero_tagline">
+      <button onclick="saveSettings()">حفظ التعديلات</button>
+      <div class="msg ok" id="settings-msg"></div>
+    </div>
+
+    <h2>إضافة صنف جديد</h2>
+    <div class="card">
+      <label>اسم الصنف</label>
+      <input type="text" id="new-name">
+      <label>السعر (AED)</label>
+      <input type="number" id="new-price">
+      <label>التصنيف</label>
+      <input type="text" id="new-category" placeholder="مثال: ورد، زنبق، مناسبات">
+      <label>رابط الصورة (اختياري)</label>
+      <input type="text" id="new-image" placeholder="https://...">
+      <button onclick="addProduct()">إضافة الصنف</button>
+      <div class="msg ok" id="add-msg"></div>
+    </div>
+
+    <h2>الأصناف الحالية</h2>
+    <div class="card" id="product-list"></div>
+  </div>
+</div>
+
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<script>
+  // ===== Fill these in after creating your Supabase project =====
+  const SUPABASE_URL = 'https://iekotptltmkjmieauhqc.supabase.co';
+  const SUPABASE_ANON_KEY = 'sb_publishable_35u5V1apSr2-DCpjp8ltmg_gIJzhXEN';
+  // ================================================================
+
+  let supabase = null;
+  if (SUPABASE_URL === 'YOUR_SUPABASE_URL' || !window.supabase) {
+    document.getElementById('login-screen').innerHTML =
+      '<h1>لوحة التحكم غير مفعّلة بعد</h1><div class="card">عدّل SUPABASE_URL و SUPABASE_ANON_KEY داخل كود الملف أولاً.</div>';
+  } else {
+    supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  }
+
+  async function checkSession(){
+    if (!supabase) return;
+    const { data } = await supabase.auth.getSession();
+    if (data.session) {
+      showDashboard();
+    }
+  }
+
+  async function login(){
+    const email = document.getElementById('login-email').value.trim();
+    const password = document.getElementById('login-password').value;
+    const msg = document.getElementById('login-msg');
+    msg.textContent = '';
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) { msg.textContent = 'بيانات الدخول غير صحيحة'; return; }
+    showDashboard();
+  }
+
+  async function logout(){
+    await supabase.auth.signOut();
+    document.getElementById('dashboard').style.display = 'none';
+    document.getElementById('login-screen').style.display = 'block';
+  }
+
+  function showDashboard(){
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('dashboard').style.display = 'block';
+    loadSettings();
+    loadProducts();
+  }
+
+  async function loadSettings(){
+    const { data } = await supabase.from('flowers_settings').select('*').eq('id', 1).single();
+    if (!data) return;
+    document.getElementById('font_color').value = data.font_color || '#F3E3C3';
+    document.getElementById('background_color').value = data.background_color || '#020617';
+    document.getElementById('font_family').value = data.font_family || 'Tajawal';
+    document.getElementById('hero_title').value = data.hero_title || '';
+    document.getElementById('hero_tagline').value = data.hero_tagline || '';
+  }
+
+  async function saveSettings(){
+    const payload = {
+      font_color: document.getElementById('font_color').value,
+      background_color: document.getElementById('background_color').value,
+      font_family: document.getElementById('font_family').value,
+      hero_title: document.getElementById('hero_title').value,
+      hero_tagline: document.getElementById('hero_tagline').value,
+      updated_at: new Date().toISOString()
+    };
+    const { error } = await supabase.from('flowers_settings').update(payload).eq('id', 1);
+    const msg = document.getElementById('settings-msg');
+    msg.textContent = error ? 'صار خطأ، حاول مرة ثانية' : 'تم الحفظ بنجاح ✓';
+    msg.className = error ? 'msg error' : 'msg ok';
+  }
+
+  async function addProduct(){
+    const name = document.getElementById('new-name').value.trim();
+    const price = parseFloat(document.getElementById('new-price').value);
+    const category = document.getElementById('new-category').value.trim() || 'عام';
+    const image_url = document.getElementById('new-image').value.trim();
+    const msg = document.getElementById('add-msg');
+    if (!name || !price) { msg.textContent = 'أدخل الاسم والسعر على الأقل'; msg.className='msg error'; return; }
+    const { error } = await supabase.from('flowers_products').insert([{ name, price, category, image_url }]);
+    if (error) { msg.textContent = 'صار خطأ، حاول مرة ثانية'; msg.className='msg error'; return; }
+    msg.textContent = 'تمت الإضافة ✓'; msg.className='msg ok';
+    document.getElementById('new-name').value = '';
+    document.getElementById('new-price').value = '';
+    document.getElementById('new-category').value = '';
+    document.getElementById('new-image').value = '';
+    loadProducts();
+  }
+
+  async function deleteProduct(id){
+    if (!confirm('حذف هذا الصنف؟')) return;
+    await supabase.from('flowers_products').delete().eq('id', id);
+    loadProducts();
+  }
+
+  async function loadProducts(){
+    const { data } = await supabase.from('flowers_products').select('*').order('created_at', { ascending: false });
+    const list = document.getElementById('product-list');
+    list.innerHTML = '';
+    (data || []).forEach(p => {
+      const row = document.createElement('div');
+      row.className = 'product-item';
+      row.innerHTML =
+        '<img src="' + (p.image_url || '') + '" onerror="this.style.visibility=\'hidden\'">' +
+        '<div class="info"><div class="name">' + p.name + '</div><div class="price">' + p.price + ' AED — ' + p.category + '</div></div>' +
+        '<div class="actions"><button class="danger" onclick="deleteProduct(' + p.id + ')">حذف</button></div>';
+      list.appendChild(row);
+    });
+  }
+
+  checkSession();
+</script>
+
+</body>
+</html>
